@@ -1,9 +1,6 @@
-name: .NET CI
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+name: .NET
+
+on: [push, pull_request]
 
 jobs:
   build:

@@ -1,4 +1,4 @@
-namespace TvShow.Info.Api.Tests
+namespace TvShows.Info.Api.Tests
 {
     [TestClass]
     public class UnitTest1

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TvShows.Info.Scraper": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

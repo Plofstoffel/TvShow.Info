@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Reflection.Emit;
 using TvShows.Info.DAL.Context.Models;
+using TvShows.Info.DAL.Models;
 
 namespace TvShows.Info.DAL
 {
@@ -19,6 +20,7 @@ namespace TvShows.Info.DAL
 
         public DbSet<CastMember> CastMembers => Set<CastMember>();
 
+        public DbSet<Scrape> Scrapes => Set<Scrape>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseLoggerFactory(_loggerFactory);

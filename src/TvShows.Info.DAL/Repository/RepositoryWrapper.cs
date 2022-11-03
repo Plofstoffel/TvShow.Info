@@ -5,6 +5,8 @@
         private readonly TvShowDbContext _repoContext;
         private ITvShowRepository? _tvShows;
         private ICastMemberRepository? _castMembers;
+        private IScrapesRepository? _scrapes;
+
         public ITvShowRepository TvShowRepository
         {
             get
@@ -16,6 +18,7 @@
                 return _tvShows;
             }
         }
+
         public ICastMemberRepository CastMemberRepository
         {
             get
@@ -27,6 +30,19 @@
                 return _castMembers;
             }
         }
+
+        public IScrapesRepository ScrapesRepository
+        {
+            get
+            {
+                if (_scrapes == null)
+                {
+                    _scrapes = new ScrapesRepository(_repoContext);
+                }
+                return _scrapes;
+            }
+        }
+
         public RepositoryWrapper(TvShowDbContext repositoryContext) => _repoContext = repositoryContext;
 
         public async Task<int> SaveAsync()

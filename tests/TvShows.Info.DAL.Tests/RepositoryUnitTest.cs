@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TvShows.Info.DAL.Context.Models;
+using TvShows.Info.DAL.Tests.Helpers;
 
 namespace TvShows.Info.DAL.Tests
 {
@@ -8,33 +9,72 @@ namespace TvShows.Info.DAL.Tests
     public class RepositoryUnitTest
     {
         [TestMethod]
-        public void RepositoryAddCastMember()
+        public void RepositoryAddOrUpdateCastMember()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<TvShowDbContext>()
-            .UseInMemoryDatabase(databaseName: "MovieListDatabase")
-            .Options;
+            var mock = CastMemberRepositoryMock.GetMock();
 
             var castMember = new CastMember
             {
+                Id = 12,
                 Name = "Test Member",
                 Bitrthday = DateTime.Now.AddYears(-25)
             };
 
             // Act
-            using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
-            {
-                context.Database.EnsureCreated();
-                context.CastMembers.Add(castMember);
-                context.SaveChanges();
-            }
+            var castMemberResult = mock.Object.AddOrUpdate(castMember);
 
             //Assert
-            using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
+            Assert.AreEqual(castMemberResult?.Id, castMember.Id);
+            
+        }
+
+        [TestMethod]
+        public void RepositoryAddTvShow()
+        {
+            // Arrange
+            var mock = TvShowRepositoryMock.GetMock();
+
+            var cast = new List<CastMember>();
+            
+            var tom = new CastMember
             {
-                var castMemberResult = context.CastMembers.FirstOrDefault();
-                Assert.AreEqual(castMemberResult?.Id, castMember.Id);
-            }
+                Id = 12,
+                Name = "Tom Member",
+                Bitrthday = DateTime.Now.AddYears(-25)
+            };
+
+            var dick = new CastMember
+            {
+                Id = 13,
+                Name = "Dick Member",
+                Bitrthday = DateTime.Now.AddYears(-25)
+            };
+
+            var harry = new CastMember
+            {
+                Id = 14,
+                Name = "Harry Member",
+                Bitrthday = DateTime.Now.AddYears(-25)
+            };
+
+            cast.Add(tom);
+            cast.Add(dick);
+            cast.Add(harry);
+
+            var tcShow = new TvShow
+            {
+                Id = 1432,
+                Name = "3 Old Men",
+                Cast = cast
+            };
+
+            // Act
+            var tvShowResult = mock.Object.AddOrUpdate(tcShow);
+
+            //Assert
+            Assert.AreEqual(tvShowResult?.Id, tcShow.Id);
+            
         }
     }
 }

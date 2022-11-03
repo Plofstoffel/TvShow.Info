@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
 using TvShows.Info.DAL;
+using TvShows.Info.DAL.Repository;
 
 namespace TvShows.Info.Api
 {
@@ -34,6 +35,7 @@ namespace TvShows.Info.Api
                 builder.Services.AddDbContext<TvShowDbContext>(
                     options => options.UseSqlServer("name=ConnectionStrings:TvShowDbContext")
                     );
+                builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
                 var app = builder.Build();
 

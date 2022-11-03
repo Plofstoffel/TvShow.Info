@@ -1,4 +1,4 @@
-namespace TvShows.Info.Scraper.Tests
+namespace TvShows.Info.ScrapeWorkerService.Tests
 {
     [TestClass]
     public class UnitTest1

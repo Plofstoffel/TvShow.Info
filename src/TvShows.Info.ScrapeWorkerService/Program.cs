@@ -26,7 +26,7 @@ namespace TvShows.Info.ScrapeWorkerService
                     options => options.UseSqlServer("name=ConnectionStrings:TvShowDbContext")
                     );
                     services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
-                    services.AddHostedService<Worker>();
+                    services.AddHostedService<ScrapeWorker>();
                 })
                 .UseSerilog((ctx, lc) => lc
                 .WriteTo.Console()

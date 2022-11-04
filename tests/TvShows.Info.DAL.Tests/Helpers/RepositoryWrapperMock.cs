@@ -11,6 +11,7 @@ namespace TvShows.Info.DAL.Tests.Helpers
 
             mock.Setup(m => m.TvShowRepository).Returns(() => new Mock<ITvShowRepository>().Object);
             mock.Setup(m => m.CastMemberRepository).Returns(() => new Mock<ICastMemberRepository>().Object);
+            mock.Setup(m => m.ScrapesRepository).Returns(() => new Mock<IScrapesRepository>().Object);
             mock.Setup(m => m.SaveAsync()).ReturnsAsync(1);
 
             return mock;

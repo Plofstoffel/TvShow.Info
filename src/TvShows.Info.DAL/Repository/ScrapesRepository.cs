@@ -17,6 +17,8 @@ namespace TvShows.Info.DAL.Repository
 
         public IQueryable<Scrape> GetScrapes() => TvShowDbContext.Set<Scrape>().AsNoTracking();
 
+        public void RemoveScrape(Scrape scrape) => TvShowDbContext.Set<Scrape>().Remove(scrape);
+
         public void RemoveScrapes(List<Scrape> scrapes) => TvShowDbContext.Set<Scrape>().RemoveRange(scrapes);
     }
 }

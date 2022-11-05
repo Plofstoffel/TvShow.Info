@@ -6,5 +6,6 @@ namespace TvShows.Info.DAL.Repository
     {        
         IQueryable<TvShow> GetOutDatedTvShows(DateTime fromDate);
         IQueryable<TvShow> GetTvShows(int pageSize, int pageNumber);
+        IQueryable<int> GetTvShowIds();
     }
 }

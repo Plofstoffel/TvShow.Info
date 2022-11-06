@@ -8,7 +8,7 @@ using TvShows.Info.DAL.Tests.Helpers;
 namespace TvShows.Info.DAL.Tests
 {
     [TestClass]
-    public class RepositoryUnitTest
+    public class RepositoryUnitTests
     {
         [TestMethod]
         public void CastMemberRepositoryAddOrUpdateCastMember()
@@ -121,6 +121,7 @@ namespace TvShows.Info.DAL.Tests
             //Assert
             Assert.IsNotNull(mock.Object.TvShowRepository);
             Assert.IsNotNull(mock.Object.CastMemberRepository);
+            Assert.IsNotNull(mock.Object.ScrapesRepository);
             Assert.AreEqual(1, saveResult);
 
         }
@@ -199,7 +200,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             // Act
@@ -249,7 +250,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             var tvShow2 = new TvShow
@@ -260,7 +261,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             // Act
@@ -277,6 +278,69 @@ namespace TvShows.Info.DAL.Tests
 
             // Assert
             Assert.AreEqual(2, result.Count());
+
+        }
+
+        [TestMethod]
+        public async Task RepositoryWrapperGetAllTvShowIds()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TvShowDbContext>()
+            .UseInMemoryDatabase(databaseName: "MovieListDatabase")
+            .EnableSensitiveDataLogging()
+            .Options;
+
+            var context = new TvShowDbContext(options, new NullLoggerFactory());
+
+            context.Database.EnsureDeleted();
+
+            var sut = new RepositoryWrapper(context);
+
+            var castMember = new CastMember
+            {
+                Id = 1,
+                Name = "Test Member",
+                Bitrthday = DateTime.Now.AddYears(-25)
+            };
+
+            var tvShow1 = new TvShow
+            {
+                Id = 1422,
+                Name = "3 Old Men",
+                Cast = new List<CastMember>
+                {
+                    castMember
+                },
+                LastUpdated = DateTime.Now.AddDays(-3)
+            };
+
+            var tvShow2 = new TvShow
+            {
+                Id = 9999,
+                Name = "99 Older Men",
+                Cast = new List<CastMember>
+                {
+                    castMember
+                },
+                LastUpdated = DateTime.Now.AddDays(-3)
+            };
+
+            // Act
+            sut.CastMemberRepository.AddOrUpdate(castMember);
+            _ = await sut.SaveAsync();
+
+            sut.TvShowRepository.AddOrUpdate(tvShow1);
+            _ = await sut.SaveAsync();
+
+            sut.TvShowRepository.AddOrUpdate(tvShow2);
+            _ = await sut.SaveAsync();
+
+            var result = sut.TvShowRepository.GetTvShowIds();
+
+            // Assert
+            Assert.AreEqual(2, result.Count());
+            Assert.IsTrue(result.Contains(tvShow1.Id));
+            Assert.IsTrue(result.Contains(tvShow2.Id));
 
         }
 
@@ -307,6 +371,94 @@ namespace TvShows.Info.DAL.Tests
             // Assert
             Assert.AreEqual(1, saveResult1);
 
+        }
+
+        [TestMethod]
+        public async Task RepositoryWrapperRemoveScrape()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TvShowDbContext>()
+            .UseInMemoryDatabase(databaseName: "MovieListDatabase")
+            .EnableSensitiveDataLogging()
+            .Options;
+
+            var context = new TvShowDbContext(options, new NullLoggerFactory());
+
+            context.Database.EnsureDeleted();
+
+            var sut = new RepositoryWrapper(context);
+
+            var scrape1 = new Scrape
+            {
+                Id = 12,
+                ScrapeDate = DateTime.Now,
+                TvShowId = 1432
+            };
+            var scrape2 = new Scrape
+            {
+                Id = 13,
+                ScrapeDate = DateTime.Now,
+                TvShowId = 1432
+            };
+            var scrapes = new List<Scrape> { scrape1, scrape2 };
+
+            // Act
+            sut.ScrapesRepository.AddOrUpdate(scrape1);
+            sut.ScrapesRepository.AddOrUpdate(scrape2);
+            var saveResult1 = await sut.SaveAsync();
+            sut.ScrapesRepository.RemoveScrape(scrape1);
+            var saveResult2 = await sut.SaveAsync();
+
+            var scrapeResult = sut.ScrapesRepository.GetScrapes();
+
+            // Assert
+            Assert.AreEqual(2, saveResult1);
+            Assert.AreEqual(1, saveResult2);
+            Assert.AreEqual(1, scrapeResult.Count());
+        }
+
+        [TestMethod]
+        public async Task RepositoryWrapperRemoveScrapes()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TvShowDbContext>()
+            .UseInMemoryDatabase(databaseName: "MovieListDatabase")
+            .EnableSensitiveDataLogging()
+            .Options;
+
+            var context = new TvShowDbContext(options, new NullLoggerFactory());
+
+            context.Database.EnsureDeleted();
+
+            var sut = new RepositoryWrapper(context);
+
+            var scrape1 = new Scrape
+            {
+                Id = 12,
+                ScrapeDate = DateTime.Now,
+                TvShowId = 1432
+            };
+            var scrape2 = new Scrape
+            {
+                Id = 13,
+                ScrapeDate = DateTime.Now,
+                TvShowId = 1432
+            };
+            var scrapes = new List<Scrape> { scrape1, scrape2 };
+
+            // Act
+            sut.ScrapesRepository.AddOrUpdate(scrape1);
+            sut.ScrapesRepository.AddOrUpdate(scrape2);
+            var saveResult1 = await sut.SaveAsync();
+            sut.ScrapesRepository.RemoveScrapes(scrapes);
+            var saveResult2 = await sut.SaveAsync();
+
+            var scrapeResult = sut.ScrapesRepository.GetScrapes();
+
+            // Assert
+            Assert.AreEqual(2, saveResult1);
+            Assert.AreEqual(2, saveResult2);
+            Assert.AreEqual(0, scrapeResult.Count());
         }
 
         [TestMethod]

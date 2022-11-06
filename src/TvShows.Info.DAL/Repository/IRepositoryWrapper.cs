@@ -4,6 +4,7 @@
     {
         ITvShowRepository TvShowRepository { get; }
         ICastMemberRepository CastMemberRepository { get; }
+        IScrapesRepository ScrapesRepository { get; }
         Task<int> SaveAsync();
     }
 }

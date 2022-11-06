@@ -81,7 +81,7 @@ namespace TvShows.Info.DAL.Tests
                 Id = 1432,
                 Name = "3 Old Men",
                 Cast = cast,
-                LastUpdates = DateTime.Now
+                LastUpdated = DateTime.Now
             };
 
             // Act
@@ -99,7 +99,7 @@ namespace TvShows.Info.DAL.Tests
                 Assert.AreEqual(tvShowResult?.Id, tcShow.Id);
                 Assert.AreEqual(tvShowResult?.Name, tcShow.Name);
                 Assert.AreEqual(tvShowResult?.Cast?.Count(), tcShow.Cast.Count());
-                Assert.AreEqual(tvShowResult?.LastUpdates, tcShow.LastUpdates);
+                Assert.AreEqual(tvShowResult?.LastUpdated, tcShow.LastUpdated);
             }
         }
 
@@ -113,7 +113,6 @@ namespace TvShows.Info.DAL.Tests
 
             var scrape = new Scrape
             {
-                Id = 1,
                 ScrapeDate = DateTime.Now,
                 TvShowId = 1
             };
@@ -130,7 +129,6 @@ namespace TvShows.Info.DAL.Tests
             using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
             {
                 var scrapeResult = context.Scrapes.FirstOrDefault();
-                Assert.AreEqual(scrapeResult?.Id, scrape.Id);
                 Assert.AreEqual(scrapeResult?.TvShowId, scrape.TvShowId);
                 Assert.AreEqual(scrapeResult?.ScrapeDate, scrape.ScrapeDate);
             }

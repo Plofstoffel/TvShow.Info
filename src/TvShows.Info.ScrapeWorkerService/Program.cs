@@ -26,8 +26,10 @@ namespace TvShows.Info.ScrapeWorkerService
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddDbContext<TvShowDbContext>(
-                    options => options.UseSqlServer("name=ConnectionStrings:TvShowDbContext")
-                    );
+                    options => { 
+                        options.UseSqlServer("name=ConnectionStrings:TvShowDbContext");
+                        options.EnableSensitiveDataLogging(true);
+                    });
                     services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
                     services.AddHttpClient("ScrapeHttpClient", client =>
                     {
@@ -61,6 +63,7 @@ namespace TvShows.Info.ScrapeWorkerService
             int.TryParse(configuration["TooManyRequestRetries"], out retries);
             var timeout = 10;
             int.TryParse(configuration["TooManyRequestTimeout"], out timeout);
+
 
             return HttpPolicyExtensions
                 .HandleTransientHttpError()

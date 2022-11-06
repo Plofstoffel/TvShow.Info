@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using TvShows.Info.DAL;
 using TvShows.Info.DAL.Context.Models;
 using TvShows.Info.DAL.Models;
 using TvShows.Info.DAL.Repository;
@@ -11,6 +15,7 @@ namespace TvShows.Info.ScrapeWorkerService
 {
     public class ScrapeWorker : BackgroundService
     {
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<ScrapeWorker> _logger;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -18,10 +23,11 @@ namespace TvShows.Info.ScrapeWorkerService
         private List<Scrape> _scrapeList;
         private List<ShowUpdateDto> _completeShowList;
 
-        public ScrapeWorker(ILogger<ScrapeWorker> logger, IRepositoryWrapper repositoryWrapper, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public ScrapeWorker(IServiceScopeFactory serviceScopeFactory, ILogger<ScrapeWorker> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
+            _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
-            _repositoryWrapper = repositoryWrapper;
+            _repositoryWrapper = new RepositoryWrapper(serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<TvShowDbContext>());
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _scrapeList = new List<Scrape>();
@@ -102,7 +108,7 @@ namespace TvShows.Info.ScrapeWorkerService
                     _logger.LogCritical("StaleTvShowUpdateFrequency should not be set on None, it is for testing only!!");
                     await Task.Delay(1000);
                     break;
-                case StaleTvShowUpdate.Day:             
+                case StaleTvShowUpdate.Day:
                     for (int i = 0; i < 24; i++)
                     {
                         await DelayForAHour(stoppingToken);
@@ -120,17 +126,19 @@ namespace TvShows.Info.ScrapeWorkerService
                 tvShowScrapeLimit = 10;
                 _logger.LogWarning($"Setting TvShowScrapeLimit not found using default value {tvShowScrapeLimit}.");
             }
-            _scrapeList = GetScrapes(tvShowScrapeLimit);
+            _scrapeList = await GetScrapes(tvShowScrapeLimit);
             while (_scrapeList.Any())
             {
-                foreach (var scrape in _scrapeList)
+                foreach (var scrape in _scrapeList.ToList())
                 {
                     await ScrapeTvShow(scrape);
+                    _scrapeList.Remove(scrape);
                 }
-                _scrapeList = GetScrapes(tvShowScrapeLimit);
+                _scrapeList = await GetScrapes(tvShowScrapeLimit);
             }
         }
 
+        [ExcludeFromCodeCoverage(Justification = "Can not cover day, week month delay in unit tests")]
         private async Task GetCompleteTvShowList(StaleTvShowUpdate? staleTvShowUpdate)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"updates/shows{(staleTvShowUpdate == null ? "" : $"?since={staleTvShowUpdate.ToString().ToLower()}")}");
@@ -153,39 +161,81 @@ namespace TvShows.Info.ScrapeWorkerService
 
         private async Task ScrapeTvShow(Scrape scrape)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-
-            //Temp to make tests work.
-            var castMemeber = new CastMember
+            try
             {
-                Id = 1,
-                Bitrthday = DateTime.Now,
-                Name = "zim"
-            };
+                _logger.LogInformation($"Scrapint TvShow with Id : {scrape.TvShowId}");
 
-            var tvShow = new TvShow
-            {
-                Id = 1,
-                Name = "Invader Zim",
-                Cast = new List<CastMember>
+                //Get TvShow
+                var tvShowRequest = new HttpRequestMessage(HttpMethod.Get, $"shows/{scrape.TvShowId}");
+
+                var client = _httpClientFactory.CreateClient("ScrapeHttpClient");
+
+                var tvShowResponse = await client.SendAsync(tvShowRequest);
+
+                if (!tvShowResponse.IsSuccessStatusCode)
                 {
-                    castMemeber
-                },
-                LastUpdates = DateTime.Now
-            };
+                    _logger.LogError($"TvShow service resonded with error {tvShowResponse.StatusCode}.");
+                }
+                else
+                {
+                    var tvShowResponseString = await tvShowResponse.Content.ReadAsStringAsync();
+                    var tvShow = JsonSerializer.Deserialize<TvShow>(tvShowResponseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (tvShow != null)
+                    {
+                        tvShow.Cast = new List<CastMember>();
+                        _repositoryWrapper.TvShowRepository.AddOrUpdate(tvShow);
+                        await _repositoryWrapper.SaveAsync();
 
-            _repositoryWrapper.TvShowRepository.AddOrUpdate(tvShow);
-            _repositoryWrapper.ScrapesRepository.RemoveScrape(scrape);
-            await _repositoryWrapper.SaveAsync();
+                        //Get cast members
+                        var castRequest = new HttpRequestMessage(HttpMethod.Get, $"shows/{scrape.TvShowId}/cast");
+
+                        var castResponse = await client.SendAsync(castRequest);
+                        if (!castResponse.IsSuccessStatusCode)
+                        {
+                            _logger.LogError($"TvShow service resonded with error {tvShowResponse.StatusCode} when getting cast member.");
+                        }
+                        else
+                        {
+                            var castResponseString = await castResponse.Content.ReadAsStringAsync();
+                            var castMembers = JsonSerializer.Deserialize<List<CastMembersDto>>(castResponseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (castMembers != null && castMembers.Any())
+                            {
+                                foreach (var castMember in castMembers)
+                                {
+                                    if (castMember?.CastMember != null)
+                                    {
+                                        tvShow.Cast.Add(castMember.CastMember);
+                                        _repositoryWrapper.CastMemberRepository.AddOrUpdate(castMember.CastMember);
+                                        await _repositoryWrapper.SaveAsync();
+                                    }
+                                }
+                            }
+                        }
+                        _logger.LogInformation($"TvShow with Id {scrape.TvShowId} scraped Successfully.");
+                        _repositoryWrapper.ScrapesRepository.RemoveScrape(scrape);
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"TvShow with Id {scrape.TvShowId} not found. Removing Scrape.");
+                        _repositoryWrapper.ScrapesRepository.RemoveScrape(scrape);
+                    }
+                    await _repositoryWrapper.SaveAsync();
+                }
+            }
+            catch (Exception)
+            {
+                _logger.LogInformation($"Scrape with Id {scrape.TvShowId} threw an error. It will be rescraped.");
+                _repositoryWrapper.ScrapesRepository.RemoveScrape(scrape);
+            }
         }
 
-        private List<Scrape> GetScrapes(int tvShowScrapeLimit)
+        private async Task<List<Scrape>> GetScrapes(int tvShowScrapeLimit)
         {
-            var scrapeList = _repositoryWrapper.ScrapesRepository.GetScrapes()?.Select(x => x.Id).ToList() ?? new List<int>();
+            var scrapeList = _repositoryWrapper.ScrapesRepository.GetScrapes()?.Select(x => x.TvShowId).ToList() ?? new List<int>();
 
             var tvShowList = _repositoryWrapper.TvShowRepository.GetTvShowIds()?.ToList() ?? new List<int>();
 
-            return _completeShowList
+            var newScrapeList =  _completeShowList
                 .Where(x => !scrapeList.Contains(x.Id))?
                 .Where(x => !tvShowList.Contains(x.Id))?
                 .Take(tvShowScrapeLimit)?
@@ -195,6 +245,12 @@ namespace TvShows.Info.ScrapeWorkerService
                     TvShowId = x.Id,
                     ScrapeDate = DateTime.Now
                 }).ToList() ?? new List<Scrape>();
+            foreach (var scrape in newScrapeList)
+            {
+                _repositoryWrapper.ScrapesRepository.AddOrUpdate(scrape);
+                await _repositoryWrapper.SaveAsync();
+            }
+            return newScrapeList;
         }
 
         protected async Task Finalize()

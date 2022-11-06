@@ -1,4 +1,6 @@
-﻿namespace TvShows.Info.DAL.Repository
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace TvShows.Info.DAL.Repository
 {
     public class RepositoryWrapper : IRepositoryWrapper
     {
@@ -44,6 +46,7 @@
         }
 
         public RepositoryWrapper(TvShowDbContext repositoryContext) => _repoContext = repositoryContext;
+
 
         public async Task<int> SaveAsync()
         {

@@ -9,7 +9,7 @@ namespace TvShows.Info.DAL.Repository
         {            
         }        
 
-        public IQueryable<TvShow> GetOutDatedTvShows(DateTime fromDate) => TvShowDbContext.Set<TvShow>().AsNoTracking().Where(x => x.LastUpdates <= fromDate);
+        public IQueryable<TvShow> GetOutDatedTvShows(DateTime fromDate) => TvShowDbContext.Set<TvShow>().AsNoTracking().Where(x => x.LastUpdated <= fromDate);
 
         public IQueryable<int> GetTvShowIds() => TvShowDbContext.Set<TvShow>().AsNoTracking().Select(x => x.Id);
 

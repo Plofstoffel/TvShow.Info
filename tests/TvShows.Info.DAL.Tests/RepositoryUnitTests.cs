@@ -200,7 +200,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             // Act
@@ -250,7 +250,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             var tvShow2 = new TvShow
@@ -261,7 +261,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             // Act
@@ -311,7 +311,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             var tvShow2 = new TvShow
@@ -322,7 +322,7 @@ namespace TvShows.Info.DAL.Tests
                 {
                     castMember
                 },
-                LastUpdates = DateTime.Now.AddDays(-3)
+                LastUpdated = DateTime.Now.AddDays(-3)
             };
 
             // Act

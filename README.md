@@ -46,3 +46,33 @@ The main function of this project is to scrape data from the [TvMaze Api](https:
 | 200 | Success |
 | 400 | Bad Request |
 | 500 | Server Error |
+
+#### Example Response
+
+```json
+[
+  {
+    "id": 0,
+    "name": "Invader Zim",
+    "cast": [
+      {
+        "id": 0,
+        "name": "Zim",
+        "birthday": "2022-11-07T00:51:36.340Z",
+        "tvShows": [
+          "Invader Zim",
+          "Some Other Show"
+        ]
+      },
+      {
+        "id": 0,
+        "name": "GIR",
+        "birthday": "2022-11-07T00:51:36.340Z",
+        "tvShows": [
+          "Invader Zim"
+        ]
+      }
+    ]
+  }
+]
+```

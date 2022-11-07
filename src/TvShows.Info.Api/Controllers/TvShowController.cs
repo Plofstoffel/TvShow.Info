@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
+using TvShows.Info.DAL.Context.Models;
 using TvShows.Info.DAL.Repository;
 
 namespace TvShows.Info.Api.Controllers
@@ -30,7 +31,7 @@ namespace TvShows.Info.Api.Controllers
             Summary = "Determine if a reboot is allowed",
             Description = "Returns true if a reboot is allowed, false otherwise",
             OperationId = nameof(GetTvShows))]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", Type = typeof(bool))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", Type = typeof(List<TvShow>))]
         public IActionResult GetTvShows(int pageSize, int pageNumber)
         {
             int maxEntriesPerPage;

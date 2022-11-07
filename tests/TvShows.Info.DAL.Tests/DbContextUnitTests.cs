@@ -82,6 +82,10 @@ namespace TvShows.Info.DAL.Tests
                 Name = "3 Old Men"
             };
 
+            tcShow.Cast.Add(tom);
+            tcShow.Cast.Add(dick);
+            tcShow.Cast.Add(harry);
+
             // Act
             using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
             {
@@ -93,7 +97,7 @@ namespace TvShows.Info.DAL.Tests
             //Assert
             using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
             {
-                var tvShowResult = context.TvShows.FirstOrDefault();
+                var tvShowResult = context.TvShows.Include(x => x.Cast).FirstOrDefault();
                 Assert.AreEqual(tvShowResult?.Id, tcShow.Id);
                 Assert.AreEqual(tvShowResult?.Name, tcShow.Name);
                 Assert.AreEqual(tvShowResult?.Cast?.Count(), tcShow.Cast.Count());

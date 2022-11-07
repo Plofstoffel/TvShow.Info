@@ -13,9 +13,6 @@ namespace TvShows.Info.DAL
             : base(options)
         {
             _loggerFactory = loggerFactory;
-
-            this.Database.EnsureCreated();
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,14 +32,15 @@ namespace TvShows.Info.DAL
                 .Property(c => c.Id)
                 .ValueGeneratedNever();
             modelBuilder.Entity<TvShow>()
-                .Property(c => c.LastUpdated)
-                .ValueGeneratedOnAdd();
+                .HasMany<CastMember>();
 
             modelBuilder.Entity<CastMember>()
                 .HasKey(c => c.Id);
             modelBuilder.Entity<CastMember>()
                 .Property(c => c.Id)
                 .ValueGeneratedNever();
+            modelBuilder.Entity<CastMember>()
+                .HasMany<TvShow>();
         }
 
         public DbSet<TvShow> TvShows => Set<TvShow>();
@@ -53,5 +51,6 @@ namespace TvShows.Info.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseLoggerFactory(_loggerFactory);
+
     }
 }

@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 using TvShows.Info.DAL.Context.Models;
 
 namespace TvShows.Info.ScrapeWorkerService.Dto
 {
     public class CastMembersDto
     {
-        [JsonPropertyName("person")]
+        [JsonProperty("person")]
         public CastMember? CastMember { get; set; }
     }
 }

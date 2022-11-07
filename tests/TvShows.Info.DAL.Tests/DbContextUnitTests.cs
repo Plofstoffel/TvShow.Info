@@ -20,7 +20,7 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 1,
                 Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             // Act
@@ -37,7 +37,7 @@ namespace TvShows.Info.DAL.Tests
                 var castMemberResult = context.CastMembers.FirstOrDefault();
                 Assert.AreEqual(castMemberResult?.Id, castMember.Id);
                 Assert.AreEqual(castMemberResult?.Name, castMember.Name);
-                Assert.AreEqual(castMemberResult?.Bitrthday, castMember.Bitrthday);
+                Assert.AreEqual(castMemberResult?.Birthday, castMember.Birthday);
             }
         }
 
@@ -55,21 +55,21 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 12,
                 Name = "Tom Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var dick = new CastMember
             {
                 Id = 13,
                 Name = "Dick Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var harry = new CastMember
             {
                 Id = 14,
                 Name = "Harry Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             cast.Add(tom);
@@ -79,9 +79,7 @@ namespace TvShows.Info.DAL.Tests
             var tcShow = new TvShow
             {
                 Id = 1432,
-                Name = "3 Old Men",
-                Cast = cast,
-                LastUpdated = DateTime.Now
+                Name = "3 Old Men"
             };
 
             // Act
@@ -95,11 +93,10 @@ namespace TvShows.Info.DAL.Tests
             //Assert
             using (var context = new TvShowDbContext(options, new NullLoggerFactory()))
             {
-                var tvShowResult = context.TvShows.Include(c => c.Cast).FirstOrDefault();
+                var tvShowResult = context.TvShows.FirstOrDefault();
                 Assert.AreEqual(tvShowResult?.Id, tcShow.Id);
                 Assert.AreEqual(tvShowResult?.Name, tcShow.Name);
                 Assert.AreEqual(tvShowResult?.Cast?.Count(), tcShow.Cast.Count());
-                Assert.AreEqual(tvShowResult?.LastUpdated, tcShow.LastUpdated);
             }
         }
 

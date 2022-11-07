@@ -20,7 +20,7 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 1,
                 Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             // Act
@@ -43,21 +43,21 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 12,
                 Name = "Tom Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var dick = new CastMember
             {
                 Id = 13,
                 Name = "Dick Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var harry = new CastMember
             {
                 Id = 14,
                 Name = "Harry Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             cast.Add(tom);
@@ -79,19 +79,6 @@ namespace TvShows.Info.DAL.Tests
 
         }
 
-        [TestMethod]
-        public void TvShowRepositoryGetOutDatedTvShows()
-        {
-            // Arrange
-            var mock = TvShowRepositoryMock.GetMock();
-
-            // Act
-            var tvShows = mock.Object.GetOutDatedTvShows(DateTime.Now);
-
-            //Assert
-            Assert.AreEqual("Invader Zim 0", tvShows.FirstOrDefault()?.Name);
-
-        }
 
         [TestMethod]
         public void TvShowRepositoryGetTvShows()
@@ -143,7 +130,7 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 1,
                 Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var tvShow = new TvShow
@@ -174,53 +161,6 @@ namespace TvShows.Info.DAL.Tests
         }
 
         [TestMethod]
-        public async Task RepositoryWrapperGetOutDatedTvShows()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<TvShowDbContext>()
-            .UseInMemoryDatabase(databaseName: "MovieListDatabase")
-            .Options;
-
-            var context = new TvShowDbContext(options, new NullLoggerFactory());
-
-            var sut = new RepositoryWrapper(context);
-
-            var castMember = new CastMember
-            {
-                Id = 1,
-                Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
-            };
-
-            var tvShow = new TvShow
-            {
-                Id = 1437,
-                Name = "3 Old Men",
-                Cast = new List<CastMember>
-                {
-                    castMember
-                },
-                LastUpdated = DateTime.Now.AddDays(-3)
-            };
-
-            // Act
-            sut.CastMemberRepository.AddOrUpdate(castMember);
-            _ = await sut.SaveAsync();
-
-            sut.TvShowRepository.AddOrUpdate(tvShow);
-            _ = await sut.SaveAsync();
-
-            sut.TvShowRepository.AddOrUpdate(tvShow);
-            _ = await sut.SaveAsync();
-
-            var result = sut.TvShowRepository.GetOutDatedTvShows(DateTime.Now.AddDays(-2));
-
-            // Assert
-            Assert.AreEqual(1, result.Count());
-
-        }
-
-        [TestMethod]
         public async Task RepositoryWrapperGetTvShows()
         {
             // Arrange
@@ -239,7 +179,7 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 1,
                 Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var tvShow1 = new TvShow
@@ -249,8 +189,7 @@ namespace TvShows.Info.DAL.Tests
                 Cast = new List<CastMember>
                 {
                     castMember
-                },
-                LastUpdated = DateTime.Now.AddDays(-3)
+                }
             };
 
             var tvShow2 = new TvShow
@@ -260,8 +199,7 @@ namespace TvShows.Info.DAL.Tests
                 Cast = new List<CastMember>
                 {
                     castMember
-                },
-                LastUpdated = DateTime.Now.AddDays(-3)
+                }
             };
 
             // Act
@@ -300,7 +238,7 @@ namespace TvShows.Info.DAL.Tests
             {
                 Id = 1,
                 Name = "Test Member",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
             };
 
             var tvShow1 = new TvShow
@@ -310,8 +248,7 @@ namespace TvShows.Info.DAL.Tests
                 Cast = new List<CastMember>
                 {
                     castMember
-                },
-                LastUpdated = DateTime.Now.AddDays(-3)
+                }
             };
 
             var tvShow2 = new TvShow
@@ -321,8 +258,7 @@ namespace TvShows.Info.DAL.Tests
                 Cast = new List<CastMember>
                 {
                     castMember
-                },
-                LastUpdated = DateTime.Now.AddDays(-3)
+                }
             };
 
             // Act

@@ -13,9 +13,6 @@ namespace TvShows.Info.DAL.Tests.Helpers
             mock.Setup(m => m.AddOrUpdate(It.IsAny<TvShow>()))
                 .Returns<TvShow>(x => x);
 
-            mock.Setup(m => m.GetOutDatedTvShows(It.IsAny<DateTime>()))
-                .Returns(GetFilledListOfShows().AsQueryable());
-
             mock.Setup(m => m.GetTvShows(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns((int pageSize, int pageNumber) => GetFilledListOfShows().Skip(pageSize*(pageNumber-1)).Take(pageSize).AsQueryable());
 
@@ -38,7 +35,7 @@ namespace TvShows.Info.DAL.Tests.Helpers
                         {
                             Id = 1,
                             Name = "Zim",
-                            Bitrthday = DateTime.Now.AddYears(-25)
+                            Birthday = DateTime.Now.AddYears(-25)
                         }
                     }
                 });

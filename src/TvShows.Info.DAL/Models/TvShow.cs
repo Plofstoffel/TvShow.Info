@@ -10,6 +10,5 @@ namespace TvShows.Info.DAL.Context.Models
         [Required(ErrorMessage = "Name is required")]
         public string? Name { get; set; }
         public List<CastMember>? Cast { get; set; }
-        public DateTime? LastUpdated { get; set; }
     }
 }

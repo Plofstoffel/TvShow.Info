@@ -13,7 +13,7 @@ namespace TvShows.Info.DAL.Tests.Helpers
             {
                 Id = 1,
                 Name = "Zim",
-                Bitrthday = DateTime.Now.AddYears(-25)
+                Birthday = DateTime.Now.AddYears(-25)
 
             };
 

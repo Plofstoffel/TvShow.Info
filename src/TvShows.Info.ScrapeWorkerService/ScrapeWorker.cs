@@ -1,9 +1,6 @@
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using TvShows.Info.DAL;
 using TvShows.Info.DAL.Context.Models;
 using TvShows.Info.DAL.Models;
@@ -15,7 +12,6 @@ namespace TvShows.Info.ScrapeWorkerService
 {
     public class ScrapeWorker : BackgroundService
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<ScrapeWorker> _logger;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -25,7 +21,6 @@ namespace TvShows.Info.ScrapeWorkerService
 
         public ScrapeWorker(IServiceScopeFactory serviceScopeFactory, ILogger<ScrapeWorker> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
             _repositoryWrapper = new RepositoryWrapper(serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<TvShowDbContext>());
             _httpClientFactory = httpClientFactory;
@@ -154,7 +149,7 @@ namespace TvShows.Info.ScrapeWorkerService
             else
             {
                 var responseString = await response.Content.ReadAsStringAsync();
-                var updateShowsDictionary = JsonSerializer.Deserialize<Dictionary<int, int>>(responseString) ?? new Dictionary<int, int>();
+                var updateShowsDictionary = JsonConvert.DeserializeObject<Dictionary<int, int>>(responseString) ?? new Dictionary<int, int>();
                 _completeShowList = updateShowsDictionary.Select(x => new ShowUpdateDto { Id = x.Key, LastUpdated = DateTimeOffset.FromUnixTimeMilliseconds(x.Value).DateTime }).ToList();
             }
         }
@@ -163,7 +158,7 @@ namespace TvShows.Info.ScrapeWorkerService
         {
             try
             {
-                _logger.LogInformation($"Scrapint TvShow with Id : {scrape.TvShowId}");
+                _logger.LogInformation($"Scraping TvShow with Id : {scrape.TvShowId}");
 
                 //Get TvShow
                 var tvShowRequest = new HttpRequestMessage(HttpMethod.Get, $"shows/{scrape.TvShowId}");
@@ -179,10 +174,9 @@ namespace TvShows.Info.ScrapeWorkerService
                 else
                 {
                     var tvShowResponseString = await tvShowResponse.Content.ReadAsStringAsync();
-                    var tvShow = JsonSerializer.Deserialize<TvShow>(tvShowResponseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var tvShow = JsonConvert.DeserializeObject<TvShow>(tvShowResponseString);
                     if (tvShow != null)
                     {
-                        tvShow.Cast = new List<CastMember>();
                         _repositoryWrapper.TvShowRepository.AddOrUpdate(tvShow);
                         await _repositoryWrapper.SaveAsync();
 
@@ -197,14 +191,14 @@ namespace TvShows.Info.ScrapeWorkerService
                         else
                         {
                             var castResponseString = await castResponse.Content.ReadAsStringAsync();
-                            var castMembers = JsonSerializer.Deserialize<List<CastMembersDto>>(castResponseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            var castMembers = JsonConvert.DeserializeObject<List<CastMembersDto>>(castResponseString, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd" });
                             if (castMembers != null && castMembers.Any())
                             {
                                 foreach (var castMember in castMembers)
                                 {
+                                    castMember.CastMember.TvShows.Add(tvShow);
                                     if (castMember?.CastMember != null)
                                     {
-                                        tvShow.Cast.Add(castMember.CastMember);
                                         _repositoryWrapper.CastMemberRepository.AddOrUpdate(castMember.CastMember);
                                         await _repositoryWrapper.SaveAsync();
                                     }
@@ -222,9 +216,10 @@ namespace TvShows.Info.ScrapeWorkerService
                     await _repositoryWrapper.SaveAsync();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogInformation($"Scrape with Id {scrape.TvShowId} threw an error. It will be rescraped.");
+                _logger.LogInformation($"Scrape with Id {scrape.TvShowId} threw an error. It will be rescraped. Error : {ex.Message}");
+                _repositoryWrapper.TvShowRepository.RemoveById(scrape.TvShowId);
                 _repositoryWrapper.ScrapesRepository.RemoveScrape(scrape);
             }
         }

@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TvShows.Info.DAL.Context.Models
 {
@@ -9,7 +11,13 @@ namespace TvShows.Info.DAL.Context.Models
         public int Id { get; set; }
         [Required(ErrorMessage = "Name is required")]
         public string? Name { get; set; }
-        [Required(ErrorMessage = "Bitrthday is required")]
-        public DateTime Bitrthday { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? Birthday { get; set; }
+        public List<TvShow> TvShows { get; set; }
+
+        public CastMember()
+        {
+            TvShows = new List<TvShow>();
+        }
     }
 }

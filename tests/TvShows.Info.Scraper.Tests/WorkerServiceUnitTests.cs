@@ -160,7 +160,7 @@ namespace TvShows.Info.ScrapeWorkerService.Tests
                 m => m.Log(
                     LogLevel.Information,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, _) => v.ToString().Contains("Scrapint TvShow with Id")),
+                    It.Is<It.IsAnyType>((v, _) => v.ToString().Contains("Scraping TvShow with Id")),
                     null,
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
                 Times.AtLeastOnce);

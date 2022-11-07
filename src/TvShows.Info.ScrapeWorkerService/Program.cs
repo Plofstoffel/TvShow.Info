@@ -60,9 +60,9 @@ namespace TvShows.Info.ScrapeWorkerService
         static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(IConfiguration configuration)
         {
             int retries;
-            int.TryParse(configuration["TooManyRequestRetries"], out retries);
+            int.TryParse(configuration["RequestErrorRetries"], out retries);
             var timeout = 10;
-            int.TryParse(configuration["TooManyRequestTimeout"], out timeout);
+            int.TryParse(configuration["RequestErrorTimeout"], out timeout);
 
 
             return HttpPolicyExtensions

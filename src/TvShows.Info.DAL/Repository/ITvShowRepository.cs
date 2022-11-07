@@ -3,8 +3,8 @@
 namespace TvShows.Info.DAL.Repository
 {
     public interface ITvShowRepository: IRepositoryBase<TvShow>
-    {        
-        IQueryable<TvShow> GetOutDatedTvShows(DateTime fromDate);
+    {
+        void RemoveById(int tvShowId);
         IQueryable<TvShow> GetTvShows(int pageSize, int pageNumber);
         IQueryable<int> GetTvShowIds();
     }

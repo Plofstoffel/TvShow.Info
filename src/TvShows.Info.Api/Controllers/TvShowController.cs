@@ -15,11 +15,13 @@ namespace TvShows.Info.Api.Controllers
     {
         private readonly ILogger<TvShowController> _logger;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IConfiguration _configuration;
 
-        public TvShowController(ILogger<TvShowController> logger, IRepositoryWrapper repositoryWrapper)
+        public TvShowController(ILogger<TvShowController> logger, IRepositoryWrapper repositoryWrapper, IConfiguration configuration)
         {
             _logger = logger;
             _repositoryWrapper = repositoryWrapper;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -31,6 +33,15 @@ namespace TvShows.Info.Api.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Success", Type = typeof(bool))]
         public IActionResult GetTvShows(int pageSize, int pageNumber)
         {
+            int maxEntriesPerPage;
+            if (!int.TryParse(_configuration["MaxEntriesPerPage"], out maxEntriesPerPage))
+            {
+                maxEntriesPerPage = 25;
+            }
+            if (pageSize > maxEntriesPerPage)
+            {
+                return BadRequest($"PageSize is grater than the allowed PageSize of {maxEntriesPerPage}.");
+            }
             _logger.LogInformation($"Retrieving {pageSize} TvShows from page {pageNumber}.");
             return Ok(_repositoryWrapper.TvShowRepository.GetTvShows(pageSize, pageNumber));
         }
